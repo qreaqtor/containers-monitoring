@@ -1,0 +1,14 @@
+services:
+  pinger:
+    build:
+      context: ../
+      dockerfile: services/pinger/build/Dockerfile
+    container_name: pinger
+    environment:
+      PG_URL: ${POSTGRES_URL}/containers?sslmode=disable
+    restart: "always"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    # depends_on:
+    #   kafka:
+    #     condition: service_healthy
