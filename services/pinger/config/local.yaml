@@ -1,0 +1,3 @@
+env: local
+ping_timeout: 1s
+update_timeout: 5s
