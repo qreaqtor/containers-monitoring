@@ -1,0 +1,11 @@
+env: dev
+api_version: 1
+app_port: 50055
+updated_period: 1h
+postgres:
+  user: user
+  password: password
+  db: containers
+  host: postgres
+  port: 5432
+  ssl: false
