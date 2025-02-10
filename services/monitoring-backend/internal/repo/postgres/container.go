@@ -23,14 +23,14 @@ func NewContainerRepo(sqldb *sql.DB, updatedPeriod time.Duration) *ContainerRepo
 	db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(false)))
 
 	return &ContainerRepo{
-		db: db,
+		db:     db,
 		period: updatedPeriod,
 	}
 }
 
-func (r *ContainerRepo) UpsertContainers(ctx context.Context, containers []models.ContainerInfo) error {
-	containersSchema := make([]schema.ContainerInfo, 0, len(containers))
-	for _, container := range containers {
+func (r *ContainerRepo) UpsertContainers(ctx context.Context, containersInfo models.ContainersInfo) error {
+	containersSchema := make([]schema.ContainerInfo, 0, len(containersInfo.Containers))
+	for _, container := range containersInfo.Containers {
 		containersSchema = append(containersSchema, schema.NewContainerSchema(container))
 	}
 
@@ -40,7 +40,7 @@ func (r *ContainerRepo) UpsertContainers(ctx context.Context, containers []model
 		Set("id = EXCLUDED.id").
 		Set("name = EXCLUDED.name").
 		Set("image = EXCLUDED.image").
-		Set("ipv4 = EXCLUDED.ipv4").
+		Set("ip = EXCLUDED.ip").
 		Set("ports = EXCLUDED.ports").
 		Set("state = EXCLUDED.state").
 		Set("status = EXCLUDED.status").
@@ -49,10 +49,7 @@ func (r *ContainerRepo) UpsertContainers(ctx context.Context, containers []model
 	return err
 }
 
-func (r *ContainerRepo) GetInfo(ctx context.Context, paging models.Page) ([]models.ContainerInfo, error) {
-	offset := int(paging.Number * paging.Size)
-	limit := int(paging.Size)
-
+func (r *ContainerRepo) GetInfo(ctx context.Context, paging models.Page) (models.ContainersInfo, error) {
 	containersSchema := make([]schema.ContainerInfo, 0, paging.Size)
 
 	bottomUpdated := time.Now().Add(-1 * r.period)
@@ -60,11 +57,11 @@ func (r *ContainerRepo) GetInfo(ctx context.Context, paging models.Page) ([]mode
 		Model(&containersSchema).
 		Where("updated_at > ?", bottomUpdated).
 		Order("updated_at DESC").
-		Offset(offset).
-		Limit(limit).
+		Offset(paging.Number * paging.Size).
+		Limit(paging.Size).
 		Scan(ctx)
 	if err != nil {
-		return nil, err
+		return models.ContainersInfo{}, err
 	}
 
 	containers := make([]models.ContainerInfo, 0, len(containersSchema))
@@ -72,5 +69,5 @@ func (r *ContainerRepo) GetInfo(ctx context.Context, paging models.Page) ([]mode
 		containers = append(containers, containerSchema.ToDomainModel())
 	}
 
-	return containers, nil
+	return models.NewContainersInfo(containers), nil
 }

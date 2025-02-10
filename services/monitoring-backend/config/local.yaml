@@ -1,8 +1,8 @@
-env: dev
+env: local
 api_version: 1
 app_port: 50055
 kafka_consumer:
   group: containers_group
   topic: containers
   brokers:
-    - kafka:9092
+    - localhost:29092

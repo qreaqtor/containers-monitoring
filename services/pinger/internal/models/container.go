@@ -4,8 +4,18 @@ type ContainerInfo struct {
 	ID     string
 	Name   string
 	Image  string
-	IPv4   string
+	IP     string
 	Ports  []string
 	State  string
 	Status string
+}
+
+type ContainersMsg struct {
+	Containers []ContainerInfo `json:"containers"`
+}
+
+func NewContainersMsg(containers []ContainerInfo) ContainersMsg {
+	return ContainersMsg{
+		Containers: containers,
+	}
 }

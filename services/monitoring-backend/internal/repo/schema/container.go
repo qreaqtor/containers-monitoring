@@ -10,10 +10,10 @@ import (
 type ContainerInfo struct {
 	bun.BaseModel `bun:"table:containers"`
 
-	Name      string `bun:",pk"`
-	ID        string `bun:",notnull"`
-	Image     string `bun:",notnull"`
-	IPv4      string
+	Name      string    `bun:",pk"`
+	ID        string    `bun:",notnull"`
+	Image     string    `bun:",notnull"`
+	IP        string    `bun:",notnull"`
 	Ports     []string  `bun:",array"`
 	State     string    `bun:",notnull"`
 	Status    string    `bun:",notnull"`
@@ -25,7 +25,7 @@ func NewContainerSchema(container models.ContainerInfo) ContainerInfo {
 		Name:   container.Name,
 		ID:     container.ID,
 		Image:  container.Image,
-		IPv4:   container.IPv4,
+		IP:     container.IP,
 		Ports:  container.Ports,
 		State:  container.State,
 		Status: container.Status,
@@ -37,7 +37,7 @@ func (c *ContainerInfo) ToDomainModel() models.ContainerInfo {
 		Name:      c.Name,
 		ID:        c.ID,
 		Image:     c.Image,
-		IPv4:      c.IPv4,
+		IP:        c.IP,
 		Ports:     c.Ports,
 		State:     c.State,
 		Status:    c.Status,

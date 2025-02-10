@@ -1,3 +1,7 @@
 env: local
 ping_timeout: 1s
 update_timeout: 5s
+kafka_producer:
+  topic: containers
+  brokers:
+    - localhost:29092

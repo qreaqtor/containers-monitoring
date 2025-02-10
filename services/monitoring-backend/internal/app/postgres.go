@@ -4,26 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 
+	_ "github.com/lib/pq"
 	"github.com/qreaqtor/containers-monitoring/monitoring-backend/internal/config"
 )
 
 func getPostgresConn(cfg config.PostgresConfig) (*sql.DB, error) {
-	sslMode := "disable"
-	if cfg.SSL {
-		sslMode = "enable"
-	}
-
-	connStr := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-		cfg.Host,
-		cfg.Port,
-		cfg.User,
-		cfg.Password,
-		cfg.DB,
-		sslMode,
-	)
-
-	conn, err := sql.Open("postgres", connStr)
+	conn, err := sql.Open("postgres", cfg.URL)
 	if err != nil {
 		return nil, fmt.Errorf("error while connecting to PostgreSQL: %v", err)
 	}

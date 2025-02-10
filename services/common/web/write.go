@@ -24,14 +24,14 @@ func WriteError(w http.ResponseWriter, msg *logmsg.LogMsg) {
 func WriteData(w http.ResponseWriter, msg *logmsg.LogMsg, data any) {
 	response, err := json.Marshal(data)
 	if err != nil {
-		WriteError(w, msg.With(err.Error(), http.StatusInternalServerError))
+		WriteError(w, msg.WithText(err.Error()).WithStatus(http.StatusInternalServerError))
 		return
 	}
 
 	w.Header().Set("Content-Type", ContentTypeJSON)
 	_, err = w.Write(response)
 	if err != nil {
-		WriteError(w, msg.With(err.Error(), http.StatusInternalServerError))
+		WriteError(w, msg.WithText(err.Error()).WithStatus(http.StatusInternalServerError))
 		return
 	}
 

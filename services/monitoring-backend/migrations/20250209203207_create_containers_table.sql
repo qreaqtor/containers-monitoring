@@ -4,7 +4,7 @@ CREATE TABLE containers (
     name TEXT PRIMARY KEY,
     id TEXT NOT NULL,
     image TEXT NOT NULL,
-    ipv4 TEXT,
+    ip TEXT,
     ports TEXT[],
     state TEXT NOT NULL,
     status TEXT NOT NULL,
@@ -14,5 +14,5 @@ CREATE TABLE containers (
 
 -- +goose Down
 -- +goose StatementBegin
-drop table if exists "courses";
+drop table if exists containers;
 -- +goose StatementEnd

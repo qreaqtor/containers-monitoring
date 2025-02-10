@@ -4,11 +4,109 @@ services:
       context: ../
       dockerfile: services/pinger/build/Dockerfile
     container_name: pinger
-    environment:
-      PG_URL: ${POSTGRES_URL}/containers?sslmode=disable
     restart: "always"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    # depends_on:
-    #   kafka:
-    #     condition: service_healthy
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  backend:
+    build:
+      context: ../
+      dockerfile: services/monitoring-backend/build/Dockerfile
+    container_name: backend
+    environment:
+      PG_URL: ${POSTGRES_URL}/containers?sslmode=disable
+    ports:
+      - "50055:50055"
+    restart: "always"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:alpine3.20
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ../scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d containers" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  migrate-containers:
+    container_name: migrate-containers
+    build:
+      context: ..
+      dockerfile: ./build/migrations.Dockerfile
+    restart: "on-failure"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["goose", "-dir", "/migrations", "postgres", "${POSTGRES_URL}/containers?sslmode=disable", "up" ]
+    volumes:
+      - ../services/monitoring-backend/migrations:/migrations
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENERS: OUTSIDE://:29092,INTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: OUTSIDE://localhost:29092,INTERNAL://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: [ "CMD", "nc", "-vz", "localhost", "9092" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  kafka-init:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka_init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    volumes:
+      - ../scripts/kafka.sh:/kafka/kafka.sh
+    command: ["sh", "-c", "chmod +x /kafka/kafka.sh && /kafka/kafka.sh"]
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
+    ports:
+      - "9909:8080"
+    restart: always
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092

@@ -1,3 +1,7 @@
 env: dev
 ping_timeout: 1s
 update_timeout: 15s
+kafka_producer:
+  topic: containers
+  brokers:
+    - kafka:9092

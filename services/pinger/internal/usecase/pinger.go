@@ -2,10 +2,11 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"time"
 
+	"github.com/IBM/sarama"
+	"github.com/qreaqtor/containers-monitoring/pinger/internal/config"
 	"github.com/qreaqtor/containers-monitoring/pinger/internal/models"
 )
 
@@ -19,13 +20,18 @@ type Pinger struct {
 	tiker *time.Ticker
 
 	containers containersInfo
+
+	producer sarama.AsyncProducer
+	topic    string
 }
 
-func NewPingerUsecase(ctx context.Context, containers containersInfo, updateTimeout time.Duration) *Pinger {
+func NewPingerUsecase(ctx context.Context, containers containersInfo, producer sarama.AsyncProducer, cfg config.Config) *Pinger {
 	return &Pinger{
 		ctx:        ctx,
 		containers: containers,
-		tiker:      time.NewTicker(updateTimeout),
+		tiker:      time.NewTicker(cfg.UpdateTimeout),
+		producer:   producer,
+		topic:      cfg.Kafka.Topic,
 	}
 }
 
@@ -42,10 +48,8 @@ func (p *Pinger) Run() error {
 				continue
 			}
 
-			for _, container := range containers {
-				fmt.Println(container)
-			}
-			fmt.Println()
+			msg := models.NewContainersMsg(containers)
+			p.sendMsg(msg)
 		}
 	}
 }

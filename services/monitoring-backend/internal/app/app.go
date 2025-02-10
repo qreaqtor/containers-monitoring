@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 
 	"github.com/gorilla/mux"
@@ -32,7 +31,7 @@ func NewApp(ctx context.Context, cfg config.Config) (*App, error) {
 
 	toClose := make([]io.Closer, 0)
 
-	router := mux.NewRouter().PathPrefix(fmt.Sprintf("/v%d", cfg.API)).Subrouter()
+	router := mux.NewRouter()
 
 	appServer := appserver.NewAppServer(
 		ctx,
@@ -44,14 +43,18 @@ func NewApp(ctx context.Context, cfg config.Config) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+	toClose = append(toClose, conn)
 
-	st := postgres.NewContainerRepo(conn, cfg.UpdatedPeriod)
-	srv := usecase.NewContainerUC(st)
-	api := api.NewContainersAPI(srv)
+	repo := postgres.NewContainerRepo(conn, cfg.UpdatedPeriod)
+	uc := usecase.NewContainerUC(ctx, repo, cfg.WsWritePeriod)
+	api := api.NewContainersAPI(uc)
 	api.Register(router)
 
-	toClose = append(toClose, conn)
+	consumerGroup, err := startConsumer(ctx, cfg.Kafka, uc.UpsertContainersHandler)
+	if err != nil {
+		return nil, err
+	}
+	toClose = append(toClose, consumerGroup)
 
 	app := &App{
 		server:  appServer,

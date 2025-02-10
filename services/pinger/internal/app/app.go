@@ -5,10 +5,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/docker/docker/client"
 	"github.com/qreaqtor/containers-monitoring/pinger/internal/config"
-	containersinfo "github.com/qreaqtor/containers-monitoring/pinger/internal/containers"
-	"github.com/qreaqtor/containers-monitoring/pinger/internal/usecase"
 
 	comlog "github.com/qreaqtor/containers-monitoring/common/logging"
 )
@@ -26,24 +23,13 @@ type App struct {
 func NewApp(ctx context.Context, cfg config.Config) (*App, error) {
 	comlog.SetDefaultLogger(cfg.Env)
 
-	toClose := make([]io.Closer, 0)
-
-	dockerClient, err := client.NewClientWithOpts(client.FromEnv)
-	if err != nil {
-		return nil, err
-	}
-	toClose = append(toClose, dockerClient)
-
-	containers, err := containersinfo.NewConmatinersInfo(ctx, dockerClient, cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	pinger := usecase.NewPingerUsecase(ctx, containers, cfg.UpdateTimeout)
-
 	app := &App{
-		toClose: toClose,
-		pinger:  pinger,
+		toClose: make([]io.Closer, 0),
+	}
+
+	err := app.setup(ctx, cfg)
+	if err != nil {
+		return nil, err
 	}
 	return app, nil
 }
