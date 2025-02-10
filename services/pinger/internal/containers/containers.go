@@ -85,7 +85,6 @@ func (c *ContainersInfo) GetInfo() ([]models.ContainerInfo, error) {
 			ID:     container.ID[:c.lengthConatinerID],
 			Name:   container.Names[0],
 			Image:  container.Image,
-			State:  container.State,
 			Status: container.Status,
 			Ports:  convertPorts(container.Ports),
 			IP:     ipAddress,

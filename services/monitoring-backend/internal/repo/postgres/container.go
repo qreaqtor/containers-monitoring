@@ -42,7 +42,6 @@ func (r *ContainerRepo) UpsertContainers(ctx context.Context, containersInfo mod
 		Set("image = EXCLUDED.image").
 		Set("ip = EXCLUDED.ip").
 		Set("ports = EXCLUDED.ports").
-		Set("state = EXCLUDED.state").
 		Set("status = EXCLUDED.status").
 		Set("updated_at = now()").
 		Exec(ctx)

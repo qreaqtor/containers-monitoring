@@ -6,7 +6,6 @@ CREATE TABLE containers (
     image TEXT NOT NULL,
     ip TEXT,
     ports TEXT[],
-    state TEXT NOT NULL,
     status TEXT NOT NULL,
     updated_at TIMESTAMP DEFAULT now()
 );

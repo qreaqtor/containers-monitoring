@@ -21,7 +21,7 @@ type App struct {
 }
 
 func NewApp(ctx context.Context, cfg config.Config) (*App, error) {
-	comlog.SetDefaultLogger(cfg.Env)
+	comlog.SetLogger(cfg.Env)
 
 	app := &App{
 		toClose: make([]io.Closer, 0),

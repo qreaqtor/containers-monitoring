@@ -10,7 +10,7 @@ import (
 
 // Return default slog.Logger if env has unsupported value.
 // Posible env values: local, dev, prod, test.
-func SetDefaultLogger(env string) {
+func SetLogger(env string) {
 	var handler slog.Handler
 
 	out := os.Stdout

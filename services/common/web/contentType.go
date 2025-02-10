@@ -1,5 +1,5 @@
 package web
 
 const (
-	ContentTypeJSON      = "application/json"
+	ContentTypeJSON = "application/json"
 )

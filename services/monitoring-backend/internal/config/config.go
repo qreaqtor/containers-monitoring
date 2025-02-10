@@ -14,7 +14,7 @@ type Config struct {
 }
 
 type PostgresConfig struct {
-	URL string `env:"PG_URL" env-required:"true"`
+	URL string `env:"PG_URL" env-default:"postgres://user:password@localhost:5432/containers?sslmode=disable"`
 }
 
 type KafkaConsumer struct {

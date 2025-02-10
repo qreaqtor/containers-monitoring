@@ -24,6 +24,8 @@ type AppServer struct {
 	port int
 
 	errChan chan error
+
+	closers []io.Closer
 }
 
 // addr is a network address that must match the form "host:port"
@@ -34,6 +36,11 @@ func NewAppServer(ctx context.Context, server server, port int) *AppServer {
 		server:  server,
 		errChan: make(chan error),
 	}
+}
+
+func (a *AppServer) WithClosers(closers []io.Closer) *AppServer {
+	a.closers = closers
+	return a
 }
 
 // start listen
@@ -86,7 +93,7 @@ func (a *AppServer) Start() error {
 }
 
 // waiting when all goroutines is done and return serve errors
-func (a *AppServer) Wait() []error {
+func (a *AppServer) wait() []error {
 	errs := make([]error, 0)
 
 	for err := range a.errChan {
@@ -97,15 +104,15 @@ func (a *AppServer) Wait() []error {
 }
 
 // waiting when all goroutines is done and return close and serve erros
-func (a *AppServer) WaitAndClose(closers []io.Closer) []error {
-	errs := a.Wait()
+func (a *AppServer) WaitAndClose() []error {
+	errs := a.wait()
 
 	wg := sync.WaitGroup{}
 	mu := sync.Mutex{}
 
-	wg.Add(len(closers))
+	wg.Add(len(a.closers))
 
-	for _, closer := range closers {
+	for _, closer := range a.closers {
 		go func(closer io.Closer) {
 			defer wg.Done()
 

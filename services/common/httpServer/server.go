@@ -11,6 +11,7 @@ type HTTPServer struct {
 }
 
 // return http server with added recovery middleware
+// used default slog.Logger value
 func NewHTTPServer(handler http.Handler) *HTTPServer {
 	return &HTTPServer{
 		server: &http.Server{

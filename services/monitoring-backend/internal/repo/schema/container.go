@@ -15,7 +15,6 @@ type ContainerInfo struct {
 	Image     string    `bun:",notnull"`
 	IP        string    `bun:",notnull"`
 	Ports     []string  `bun:",array"`
-	State     string    `bun:",notnull"`
 	Status    string    `bun:",notnull"`
 	UpdatedAt time.Time `bun:",default:current_timestamp"`
 }
@@ -27,7 +26,6 @@ func NewContainerSchema(container models.ContainerInfo) ContainerInfo {
 		Image:  container.Image,
 		IP:     container.IP,
 		Ports:  container.Ports,
-		State:  container.State,
 		Status: container.Status,
 	}
 }
@@ -39,7 +37,6 @@ func (c *ContainerInfo) ToDomainModel() models.ContainerInfo {
 		Image:     c.Image,
 		IP:        c.IP,
 		Ports:     c.Ports,
-		State:     c.State,
 		Status:    c.Status,
 		UpdatedAt: c.UpdatedAt,
 	}

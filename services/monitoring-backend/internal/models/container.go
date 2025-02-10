@@ -8,7 +8,6 @@ type ContainerInfo struct {
 	Image  string
 	IP     string
 	Ports  []string
-	State  string
 	Status string
 
 	UpdatedAt time.Time

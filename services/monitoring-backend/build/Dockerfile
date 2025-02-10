@@ -9,4 +9,5 @@ FROM alpine:latest
 COPY --from=builder /app/services/monitoring-backend/config /config
 COPY --from=builder /bin/app /app
 
+EXPOSE 50055
 CMD ["/app"]
