@@ -5,14 +5,14 @@ import (
 	"log/slog"
 )
 
-type DiscardHandler struct {}
+type DiscardHandler struct{}
 
 func NewDiscardHandler() *DiscardHandler {
 	return &DiscardHandler{}
 }
 
 // always return nil because this handler ignores writting
-func (h *DiscardHandler) Handle(_ context.Context, _ slog.Record) error {
+func (h DiscardHandler) Handle(_ context.Context, _ slog.Record) error {
 	return nil
 }
 
@@ -27,6 +27,6 @@ func (h *DiscardHandler) WithGroup(_ string) slog.Handler {
 }
 
 // always return false
-func (h *DiscardHandler) Enabled(_ context.Context, _ slog.Level) bool {
+func (h DiscardHandler) Enabled(_ context.Context, _ slog.Level) bool {
 	return false
 }
