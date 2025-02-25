@@ -9,7 +9,6 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
-	"github.com/go-ping/ping"
 	"github.com/qreaqtor/containers-monitoring/pinger/internal/config"
 	"github.com/qreaqtor/containers-monitoring/pinger/internal/models"
 )
@@ -27,7 +26,7 @@ type ContainersInfo struct {
 	lengthConatinerID uint
 }
 
-func NewConmatinersInfo(ctx context.Context, dockerClient *client.Client, cfg config.Config) (*ContainersInfo, error) {
+func NewContainersInfo(ctx context.Context, dockerClient *client.Client, cfg config.Config) (*ContainersInfo, error) {
 	opts := container.ListOptions{
 		All: true,
 	}
@@ -51,33 +50,17 @@ func (c *ContainersInfo) GetInfo() ([]models.ContainerInfo, error) {
 
 	containersInfo := make([]models.ContainerInfo, 0, len(containers))
 	for _, container := range containers {
-		var ipAddress string
+		ipAddress := ""
 		for _, network := range container.NetworkSettings.Networks {
-			if network.IPAddress != "" {
-				ipAddress = network.IPAddress
-				break
+			if network.IPAddress == "" {
+				continue
+			} else if err := ping(network.IPAddress, c.pingCount, c.pingTimeout); err != nil {
+				slog.Info(err.Error())
+				continue
 			}
+			ipAddress = network.IPAddress
 		}
 		if ipAddress == "" {
-			continue
-		}
-
-		pinger, err := ping.NewPinger(ipAddress)
-		if err != nil {
-			slog.Error(err.Error())
-			continue
-		}
-
-		pinger.Count = c.pingCount
-		pinger.Timeout = c.pingTimeout
-		err = pinger.Run()
-		if err != nil {
-			slog.Error(err.Error())
-			continue
-		}
-
-		stats := pinger.Statistics()
-		if stats.PacketsRecv == 0 {
 			continue
 		}
 

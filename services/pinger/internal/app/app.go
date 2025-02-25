@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"log/slog"
 
 	"github.com/qreaqtor/containers-monitoring/pinger/internal/config"
 
@@ -35,6 +36,8 @@ func NewApp(ctx context.Context, cfg config.Config) (*App, error) {
 }
 
 func (a *App) Run() error {
+	slog.Info("started")
+
 	return a.pinger.Run()
 }
 
@@ -47,6 +50,8 @@ func (a *App) Close() error {
 			errs = append(errs, err)
 		}
 	}
+
+	slog.Info("closed")
 
 	return errors.Join(errs...)
 }

@@ -43,6 +43,9 @@ func (p *Pinger) Run() error {
 			return nil
 		case <-p.tiker.C:
 			containers, err := p.containers.GetInfo()
+			if err == nil && len(containers) == 0 {
+				err = errNoContainers
+			}
 			if err != nil {
 				slog.Error(err.Error())
 				continue
