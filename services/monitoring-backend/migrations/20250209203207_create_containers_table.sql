@@ -1,14 +1,13 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE containers (
-    name TEXT NOT NULL,
+    name TEXT PRIMARY KEY,
     id TEXT NOT NULL,
     image TEXT NOT NULL,
     ip TEXT,
     ports TEXT[],
     status TEXT NOT NULL,
-    updated_at TIMESTAMP DEFAULT now(),
-    PRIMARY KEY (name, ip)
+    updated_at TIMESTAMP DEFAULT now()
 );
 -- +goose StatementEnd
 
