@@ -15,7 +15,10 @@ func (c *ContainerUC) GetInfo(ctx context.Context, page models.Page) (models.Con
 func (c *ContainerUC) GetInfoChan(ctx context.Context, page models.Page) <-chan result.Result[models.ContainersInfo] {
 	output := make(chan result.Result[models.ContainersInfo])
 
-	go c.writeInfo(ctx, page, output)
+	go func() {
+		defer close(output)
+		c.writeInfo(ctx, page, output)
+	}()
 
 	return output
 }
@@ -23,17 +26,17 @@ func (c *ContainerUC) GetInfoChan(ctx context.Context, page models.Page) <-chan 
 func (c *ContainerUC) writeInfo(ctx context.Context, page models.Page, output chan result.Result[models.ContainersInfo]) {
 	ticker := time.NewTicker(c.wsWritePeriod)
 	defer ticker.Stop()
-	defer close(output)
 
 	for {
+		containers, err := c.repo.GetInfo(ctx, page)
+		if err != nil {
+			output <- result.NewErrorResult[models.ContainersInfo](err)
+			return
+		}
+		output <- result.NewValueResult(containers)
+
 		select {
 		case <-ticker.C:
-			containers, err := c.repo.GetInfo(ctx, page)
-			if err != nil {
-				output <- result.NewErrorResult[models.ContainersInfo](err)
-				return
-			}
-			output <- result.NewValueResult(containers)
 		case <-ctx.Done():
 			return
 		}

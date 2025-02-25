@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"log/slog"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -40,8 +39,6 @@ func NewContainersAPI(containers containersGetter) *ContainersAPI {
 func (c *ContainersAPI) Register(r *mux.Router) {
 	r.Path("/info/ws").HandlerFunc(c.getInfoWS).Methods(http.MethodGet)
 	r.Path("/info").HandlerFunc(c.getInfo).Methods(http.MethodGet)
-
-	r.Path("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) { slog.Info("hello!") }).Methods(http.MethodGet)
 }
 
 func (c *ContainersAPI) getInfo(w http.ResponseWriter, r *http.Request) {
@@ -70,6 +67,8 @@ func (c *ContainersAPI) getInfoWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
+
+	logMsg.WithText("connected from " + r.RemoteAddr).Info()
 
 	page := getPaging(r)
 
