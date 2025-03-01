@@ -27,6 +27,21 @@ services:
       postgres:
         condition: service_healthy
 
+  frontend:
+    build:
+      context: ../services/monitoring-frontend
+      dockerfile: build/Dockerfile
+    container_name: frontend
+    environment:
+      VITE_BACKEND_URL: localhost:50055
+      NODE_ENV: production
+    ports:
+      - "3000:8080"
+    restart: "always"
+    depends_on:
+      backend:
+        condition: service_started
+
   postgres:
     image: postgres:alpine3.20
     container_name: postgres

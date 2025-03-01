@@ -22,7 +22,7 @@ func ping(ipAddress string, pingCount int, pingTimeout time.Duration) error {
 
 	pingAttemptTimeout := pingTimeout / time.Duration(pingCount)
 
-	for i := 0; i < pingCount; i++ {
+	for i := range pingCount {
 		msg := icmp.Message{
 			Type: ipv4.ICMPTypeEcho,
 			Code: 0,
@@ -61,16 +61,16 @@ func ping(ipAddress string, pingCount int, pingTimeout time.Duration) error {
 		switch responseMsg.Type {
 		case ipv4.ICMPTypeEchoReply:
 			return nil
+		case ipv4.ICMPTypeTimeExceeded:
+			continue
 		case ipv4.ICMPTypeDestinationUnreachable:
 			return errDestinationUnreachable
 		case ipv4.ICMPTypeRedirect:
 			return errRedirect
 		case ipv4.ICMPTypeExtendedEchoRequest:
 			return errCantReply
-		case ipv4.ICMPTypeTimeExceeded:
-			continue
 		default:
-			slog.Info("not expected icmp message type", slog.String("response msg", fmt.Sprintf("%+#v", responseMsg)))
+			return fmt.Errorf("not expected icmp message type: %+#v", responseMsg)
 		}
 	}
 

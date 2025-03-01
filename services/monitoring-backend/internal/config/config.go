@@ -7,7 +7,7 @@ type Config struct {
 	API           uint          `yaml:"api_version" env-required:"true"`
 	Port          uint          `yaml:"app_port" env-required:"true"`
 	UpdatedPeriod time.Duration `yaml:"updated_period" env-default:"1h"`
-	WsWritePeriod time.Duration `yaml:"ws_write_period" env-default:"10s"`
+	WsWritePeriod time.Duration `yaml:"ws_write_period" env-default:"5s"`
 	Kafka         KafkaConsumer `yaml:"kafka_consumer" env-required:"true"`
 
 	Postgres PostgresConfig `env-required:"true"`
