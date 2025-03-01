@@ -17,7 +17,7 @@ func (app *App) setup(ctx context.Context, cfg config.Config) error {
 	}
 	app.toClose = append(app.toClose, dockerClient)
 
-	containers, err := containersinfo.NewConmatinersInfo(ctx, dockerClient, cfg)
+	containers, err := containersinfo.NewContainersInfo(ctx, dockerClient, cfg)
 	if err != nil {
 		return err
 	}

@@ -3,14 +3,14 @@ package models
 import "time"
 
 type ContainerInfo struct {
-	ID     string
-	Name   string
-	Image  string
-	IP     string
-	Ports  []string
-	Status string
+	ID     string   `json:"id"`
+	Name   string   `json:"name"`
+	Image  string   `json:"image"`
+	IP     string   `json:"ip"`
+	Ports  []string `json:"ports"`
+	Status string   `json:"status"`
 
-	UpdatedAt time.Time
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type ContainersInfo struct {

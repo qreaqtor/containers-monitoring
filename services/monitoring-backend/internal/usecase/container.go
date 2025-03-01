@@ -34,6 +34,9 @@ func (c *ContainerUC) UpsertContainersHandler(consumerMsg *sarama.ConsumerMessag
 	msg := new(models.ContainersInfo)
 
 	err := json.Unmarshal(consumerMsg.Value, msg)
+	if err == nil && len(msg.Containers) == 0 {
+		err = errEmptyMessage
+	}
 	if err != nil {
 		return err
 	}

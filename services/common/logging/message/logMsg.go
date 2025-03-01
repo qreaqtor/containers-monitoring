@@ -47,9 +47,14 @@ func (msg *LogMsg) Error() {
 }
 
 func getArgs(msg *LogMsg) []any {
-	return []any{
-		"status", msg.Status,
-		"url", msg.URL,
-		"method", msg.Method,
+	args := []any{
+		slog.String("url", msg.URL),
+		slog.String("method", msg.Method),
 	}
+
+	if msg.Status > 0 {
+		args = append(args, slog.Int("status", msg.Status))
+	}
+
+	return args
 }
